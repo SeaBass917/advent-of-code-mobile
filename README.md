@@ -1,16 +1,6 @@
-# advent_of_code
+# Advent Of Code Mobile App
+This application is the result of the joke: "LOL. You should do the advent of code in Dart".
 
-A new Flutter project.
+I am not affiliated in any way with the original creator of the advent of code: [Eric Wastle](https://twitter.com/ericwastl?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor).
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+[https://adventofcode.com/](https://adventofcode.com/)
