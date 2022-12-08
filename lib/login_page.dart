@@ -1,4 +1,5 @@
 import 'package:advent_of_code/auth_button.dart';
+import 'package:advent_of_code/network.dart';
 import 'package:advent_of_code/style_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -7,19 +8,20 @@ class LoginPage extends StatelessWidget {
   const LoginPage(String title, {super.key});
   final String title = "Login";
 
-  void githubLoginCB() {
+  void githubLoginCB(context) async {
     print("github.");
+    await getGitHubSessionToken(context);
   }
 
-  void googleLoginCB() {
+  void googleLoginCB(context) {
     print("google.");
   }
 
-  void twitterLoginCB() {
+  void twitterLoginCB(context) {
     print("twitter.");
   }
 
-  void redditLoginCB() {
+  void redditLoginCB(context) {
     print("reddit.");
   }
 
@@ -34,7 +36,7 @@ class LoginPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(32.0, 32.0, 32.0, 8),
             child: Text(
-              "To play, please identify yourself via one of these services:",
+              "Please identify yourself via one of these services:",
               style: Theme.of(context).textTheme.bodyText1,
             ),
           ),
@@ -44,12 +46,16 @@ class LoginPage extends StatelessWidget {
               AuthButton(
                 "GitHub",
                 FontAwesomeIcons.github,
-                callback: githubLoginCB,
+                callback: () {
+                  githubLoginCB(context);
+                },
               ),
               AuthButton(
                 "Google",
                 FontAwesomeIcons.google,
-                callback: googleLoginCB,
+                callback: () {
+                  googleLoginCB(context);
+                },
               ),
             ],
           ),
@@ -60,12 +66,16 @@ class LoginPage extends StatelessWidget {
               AuthButton(
                 "Twitter",
                 FontAwesomeIcons.twitter,
-                callback: twitterLoginCB,
+                callback: () {
+                  twitterLoginCB(context);
+                },
               ),
               AuthButton(
                 "Reddit",
                 FontAwesomeIcons.reddit,
-                callback: redditLoginCB,
+                callback: () {
+                  redditLoginCB(context);
+                },
               ),
             ],
           ),

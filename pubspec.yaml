@@ -37,6 +37,11 @@ dependencies:
   dart_ping: ^7.0.2
   html: ^0.15.1
   font_awesome_flutter: ^10.3.0
+  oauth2: ^2.0.1
+  webview_flutter: ^3.0.4
+  flutter_inappwebview: ^5.7.2+2
+  shared_preferences: ^2.0.15
+  # webview_cookie_manager: ^2.0.6
 
 dev_dependencies:
   flutter_test:
@@ -82,13 +87,4 @@ flutter:
         - asset: assets/fonts/SourceCodePro-VariableFont_wght.ttf
         - asset: assets/fonts/SourceCodePro-Italic-VariableFont_wght.ttf
           style: italic
-
-    - family: BebasNeue
-      fonts:
-        - asset: assets/fonts/BebasNeue-Regular.ttf
-        
-    - family: Wallpoet
-      fonts:
-        - asset: assets/fonts/Wallpoet-Regular.ttf
-
         

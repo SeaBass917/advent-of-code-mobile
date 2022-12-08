@@ -2,6 +2,7 @@ import 'package:advent_of_code/login_page.dart';
 import 'package:advent_of_code/style_sheet.dart';
 import 'package:advent_of_code/terminal_card.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Advent Of Code',
       theme: ThemeData(
         primarySwatch: Style.actionColor,
         fontFamily: "SourceCodePro",
@@ -151,26 +152,54 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const MyHomePage(title: 'Advent Of Code'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late Widget userField = Text("unk");
+
   void login_cb() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => LoginPage("Login")),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    SharedPreferences.getInstance().then((prefs) {
+      super.setState(() {
+        if (prefs.containsKey("session")) {
+          String sessionString = prefs.getString("session")!;
+
+          /// TODO: Get user name
+          userField = TextButton(
+              onPressed: null,
+              child: Text(
+                "SeaBass",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ));
+        } else {
+          userField = TextButton(
+              onPressed: login_cb,
+              child: Text(
+                "Log in",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ));
+        }
+      });
+    });
   }
 
   @override
@@ -180,13 +209,8 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(widget.title),
-            TextButton(
-                onPressed: login_cb,
-                child: Text(
-                  "Log in",
-                  style: Theme.of(context).textTheme.bodyMedium,
-                )),
+            const Text("Advent Of Code"),
+            userField,
           ],
         ),
       ),
