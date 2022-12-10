@@ -1,4 +1,5 @@
 import 'package:advent_of_code/login_page.dart';
+import 'package:advent_of_code/network.dart';
 import 'package:advent_of_code/style_sheet.dart';
 import 'package:advent_of_code/terminal_card.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Advent Of Code',
       theme: ThemeData(
-        primarySwatch: Style.actionColor,
+        primarySwatch: Style.terminalHighlightSwatch,
         fontFamily: "SourceCodePro",
         scaffoldBackgroundColor: Style.scaffoldColor,
         appBarTheme: const AppBarTheme(
@@ -165,45 +166,75 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late Widget userField = Text("unk");
+  late Widget userField = const Text("unk");
 
-  void login_cb() {
+  void loginCB() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage("Login")),
+      MaterialPageRoute(builder: (context) => const LoginPage("Login")),
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
+  // Sets up the
+  void setLoginText() async {
+    // Get the text from the username div
+    String username = "";
+    String stars = "";
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey("session")) {
+      String sessionString = prefs.getString("session")!;
 
-    SharedPreferences.getInstance().then((prefs) {
-      super.setState(() {
-        if (prefs.containsKey("session")) {
-          String sessionString = prefs.getString("session")!;
+      var usernamePair = await getUserName(sessionString);
+      username = usernamePair.item1;
+      stars = usernamePair.item2;
+    }
 
-          /// TODO: Get user name
-          userField = TextButton(
-              onPressed: null,
-              child: Text(
-                "SeaBass",
-                style: Theme.of(context).textTheme.bodyMedium,
-              ));
-        } else {
-          userField = TextButton(
-              onPressed: login_cb,
-              child: Text(
-                "Log in",
-                style: Theme.of(context).textTheme.bodyMedium,
-              ));
-        }
-      });
+    /// TODO: Add user profile picture.
+    super.setState(() {
+      if (usernameDivText.isNotEmpty) {
+        userField = TextButton(
+            onPressed: null,
+            child: Row(
+              children: [
+                Text(
+                  username,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const Padding(padding: EdgeInsets.all(Style.padding1)),
+                Text(
+                  stars,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.apply(color: Style.starColor),
+                ),
+                // SizedBox(
+                //   width: 70,
+                //   height: 70,
+                //   child: ClipOval(
+                //     child: Image.asset(
+                //       "assets/images/user-icon.png",
+                //       width: 20,
+                //       height: 20,
+                //     ),
+                //   ),
+                // ),
+              ],
+            ));
+      } else {
+        userField = TextButton(
+            onPressed: loginCB,
+            child: Text(
+              "Log in",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ));
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    setLoginText();
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -219,12 +250,12 @@ class _MyHomePageState extends State<MyHomePage> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return TerminalCard(year: "${2022 - index}");
+                return TerminalCard(year: "${DateTime.now().year - index}");
               },
-              // 40 list items
-              childCount: 8,
+              childCount: DateTime.now().year - yearZero,
             ),
           ),
+          const SliverPadding(padding: EdgeInsets.all(Style.padding0))
         ],
       ),
     );

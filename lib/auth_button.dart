@@ -1,6 +1,5 @@
 import 'package:advent_of_code/style_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AuthButton extends StatelessWidget {
   const AuthButton(this.text, this.icon, {super.key, required this.callback});

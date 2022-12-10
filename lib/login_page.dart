@@ -9,20 +9,19 @@ class LoginPage extends StatelessWidget {
   final String title = "Login";
 
   void githubLoginCB(context) async {
-    print("github.");
-    await getGitHubSessionToken(context);
+    getSessionToken(context, "github");
   }
 
   void googleLoginCB(context) {
-    print("google.");
+    getSessionToken(context, "google");
   }
 
   void twitterLoginCB(context) {
-    print("twitter.");
+    getSessionToken(context, "twitter");
   }
 
   void redditLoginCB(context) {
-    print("reddit.");
+    getSessionToken(context, "reddit");
   }
 
   @override

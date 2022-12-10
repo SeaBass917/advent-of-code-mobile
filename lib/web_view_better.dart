@@ -12,8 +12,6 @@ class WebViewBetter extends StatefulWidget {
 }
 
 class _WebViewBetter extends State<WebViewBetter> {
-  late InAppWebViewController _webViewController;
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,9 +24,6 @@ class _WebViewBetter extends State<WebViewBetter> {
           initialOptions: InAppWebViewGroupOptions(
             crossPlatform: InAppWebViewOptions(),
           ),
-          onWebViewCreated: (InAppWebViewController controller) {
-            _webViewController = controller;
-          },
           onTitleChanged: (controller, title) {
             /// TODO: This is hacky. PLease be smarter about deciding when we are done. e.g. is the cookie here?
             if (title == "Advent of Code 2022") {

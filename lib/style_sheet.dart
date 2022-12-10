@@ -8,7 +8,8 @@ abstract class Style {
   static const Color textDisableColor = Color.fromARGB(255, 123, 123, 123);
   static const Color linkColor = Color.fromRGBO(0, 0x99, 0, 1);
   static const Color linkHoverColor = Color.fromRGBO(0x99, 0xff, 0x99, 1);
-  static const MaterialColor actionColor = MaterialColor(
+  static const Color starColor = Color.fromRGBO(0xff, 0xff, 0x66, 1);
+  static const MaterialColor terminalHighlightSwatch = MaterialColor(
     0xffff66,
     <int, Color>{
       50: Color.fromRGBO(0xff, 0xff, 0x66, 0.775),

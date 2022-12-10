@@ -22,8 +22,6 @@ class _TerminalCard extends State<TerminalCard> {
   }
 
   void clickCB(BuildContext context) {
-    // var t = getAdventPage(2022, day: 1);
-    // print(t);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AdventPage(year: widget.year)),

@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:advent_of_code/web_view_better.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:http/http.dart';
@@ -8,51 +6,115 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tuple/tuple.dart';
 // import 'package:oauth2/oauth2.dart' as oauth2;
 // import 'package:webview_flutter/webview_flutter.dart';
 // import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 
+// Seconds between each access
+const int throttleAccessRateSeconds = 5;
+DateTime timeLastAccess = DateTime.fromMillisecondsSinceEpoch(0);
+
+// This function is the way out of the application.
+// Data access rates will be throttled to avoid angering
+// the lovely people who make Advent of Code possible.
+Future<Response> getWebPage(final Uri url,
+    {final String sessionToken = ""}) async {
+  //
+  // Determine if we have waited long enough since last query
+  // If we have not, then wait
+  final timePastSafeTime = DateTime.now().difference(
+      timeLastAccess.add(const Duration(seconds: throttleAccessRateSeconds)));
+  if (timePastSafeTime.inSeconds < 0) {
+    await Future.delayed(Duration(seconds: -1 * timePastSafeTime.inSeconds));
+  }
+
+  http.Client client = http.Client();
+  Map<String, String> headers = (sessionToken.isNotEmpty)
+      ? {
+          "cookie": "session=$sessionToken",
+        }
+      : {};
+  return client.get(url, headers: headers);
+}
+
 const String adventWebsite = "https://adventofcode.com/";
+const int yearZero = 2014;
+
+// Auth Endpoints
 const String endpointGitHubAuth = "${adventWebsite}auth/github";
 const String endpointGoogleAuth = "${adventWebsite}auth/google";
 const String endpointTwitterAuth = "${adventWebsite}auth/twitter";
 const String endpointRedditAuth = "${adventWebsite}auth/reddit";
 
-Future<void> getGitHubSessionToken(context) async {
-  http.Client client = http.Client();
-  final CookieManager cookieManager = CookieManager.instance();
-  Response reqOAuthURL = await client.get(Uri.parse(endpointGitHubAuth));
-  if (reqOAuthURL.statusCode == 200) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              WebViewBetter(Uri.parse(endpointGitHubAuth), cookieManager),
-        ));
+Future<void> getSessionToken(context, final String authType) async {
+  // Determine which endpoint for the given request
+  String endpointAuth = "";
+  switch (authType) {
+    case "github":
+      endpointAuth = endpointGitHubAuth;
+      break;
+    case "google":
+      endpointAuth = endpointGoogleAuth;
+      break;
+    case "twitter":
+      endpointAuth = endpointTwitterAuth;
+      break;
+    case "reddit":
+      endpointAuth = endpointRedditAuth;
+      break;
+    default:
+      return;
   }
 
-  List<Cookie> cookies =
-      await cookieManager.getCookies(url: Uri.parse(adventWebsite));
-  Cookie sessionCookie =
-      cookies.firstWhere((element) => element.name == "session");
-  String sessionString = sessionCookie.value;
+  // Let the user login so we can access the session token
+  Response reqOAuthURL = await getWebPage(Uri.parse(endpointAuth));
+  final CookieManager cookieManager = CookieManager.instance();
 
-  // Save a preference
-  SharedPreferences.getInstance().then((prefs) {
-    prefs.setString("session", sessionString);
-  });
+  // If that all went well we can grab the token
+  if (reqOAuthURL.statusCode == 200) {
+    List<Cookie> cookies =
+        await cookieManager.getCookies(url: Uri.parse(adventWebsite));
+    Cookie sessionCookie =
+        cookies.firstWhere((element) => element.name == "session");
+    String sessionString = sessionCookie.value;
 
-  // var req = await client.get(
-  //   Uri.parse("${adventWebsite}2022/day/1"),
-  //   headers: {
-  //     "cookie": "session=$sessionString",
-  //   },
-  // );
-  // if (req.statusCode == 200) {
-  //   print(processAdventPage(String.fromCharCodes(req.bodyBytes)));
-  // } else {
-  //   return "";
-  // }
+    // Save the cookie in the prefs
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString("session", sessionString);
+      // Go back to the main page.
+      Navigator.popUntil(context, (route) => route.isFirst);
+    });
+  }
+}
+
+// Retrieve the username from the Advent of Code page
+// Yes there may be a better way of doing this...
+// returns the username, and the number of stars string
+Future<Tuple2<String, String>> getUserName(String sessionString) async {
+  var req = await getWebPage(
+    Uri.parse(adventWebsite),
+    sessionToken: sessionString,
+  );
+
+  if (req.statusCode != 200) return const Tuple2("", "");
+
+  final document = parse(String.fromCharCodes(req.bodyBytes));
+  final usernameDivs = document.getElementsByClassName("user");
+  if (usernameDivs.isEmpty) return const Tuple2("", "");
+
+  final usernameDiv = usernameDivs[0];
+  final starCounts = usernameDiv.getElementsByClassName("star-count");
+  final String stars = (starCounts.isNotEmpty) ? starCounts[0].text : "";
+
+  // Separate the username from the star count if there is a star count
+  String username = usernameDiv.text;
+  if (stars.isNotEmpty) {
+    final tokens = username.split(" ");
+    username = tokens.sublist(0, tokens.length - 1).join(" ");
+  }
+
+  return Tuple2(username, stars);
 }
 
 String processAdventPage(final String raw) {
@@ -60,10 +122,8 @@ String processAdventPage(final String raw) {
   var descriptions = document.getElementsByClassName("day-desc");
 
   String str = "";
-  int i = 0;
   for (var description in descriptions) {
-    str += "description.outerHtml.$i";
-    i++;
+    str += description.outerHtml;
   }
 
   return str;
@@ -123,8 +183,7 @@ Future<String> getAdventPage(final int year, {final int day = 0}) async {
 
 // Download from the specified [url].
 Future<String> downloadFile(String url) async {
-  http.Client client = http.Client();
-  var req = await client.get(Uri.parse(url));
+  var req = await getWebPage(Uri.parse(url));
   if (req.statusCode == 200) {
     return String.fromCharCodes(req.bodyBytes);
   } else {
