@@ -29,6 +29,7 @@ Future<Response> getWebPage(final Uri url,
     await Future.delayed(Duration(seconds: -1 * timePastSafeTime.inSeconds));
   }
 
+  timeLastAccess = DateTime.now();
   http.Client client = http.Client();
   Map<String, String> headers = (sessionToken.isNotEmpty)
       ? {
